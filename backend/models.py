@@ -33,13 +33,13 @@ class User(models.Model):
 class DoingGoodStreaks():
     user = models.IntegerField()
     date = models.DateField()
-    
+
 
 class Course(models.Model):
     name = models.CharField(max_length=50)
     creator = models.IntegerField() #id of the creator
     goal = models.TextField()
-    moral_type = models.CharField() # is there a school of thought that is presented in this course
+    moral_type = models.CharField(max_length=20) # is there a school of thought that is presented in this course
     course_type = models.CharField(max_length=2)
 
 
@@ -49,7 +49,7 @@ class CourseQuestion(models.Model):
     goal = models.TextField()
     creator = models.IntegerField()
     #defines for which moral groups this can be relevant
-    relevant_for = models.CharField(20)
+    relevant_for = models.CharField(max_length=20)
     interactive = models.BooleanField()
     #multiple choice quizes are stored with a special syntax in content
     multiple_choice_quiz = models.BooleanField()
@@ -58,16 +58,16 @@ class CourseQuestion(models.Model):
     furhter_resources = models.TextField()
 
 
-class GoodThing(models.Modle):
+class GoodThing(models.Model):
     name = models.CharField(max_length=100)
     impact = models.CharField(max_length=200)
     creator = models.CharField(max_length=20)
     #defines for which moral groups this can be relevant
-    relevant_for = models.CharField(20)
+    relevant_for = models.CharField(max_length=20)
 
 
 class Issues(models.Model):
-    issue_name = models.CharField()
+    issue_name = models.CharField(max_length=100)
 
 
 class DoneGoodThings(models.Model):
@@ -85,7 +85,7 @@ could be determined by the done Course Questions but if they change a finished c
 and it just saves server side calculation power to do it that way for a very moderate cost in memory
 """
 class DoneCourses(models.Model):
-    user = models.IntegerChoices()
+    user = models.IntegerField()
     coures = models.IntegerField()
 
 
