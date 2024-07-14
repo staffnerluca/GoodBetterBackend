@@ -30,6 +30,11 @@ class User(models.Model):
     goodness_score = models.IntegerField()
 
 
+class DoingGoodStreaks():
+    user = models.IntegerField()
+    date = models.DateField()
+    
+
 class Course(models.Model):
     name = models.CharField(max_length=50)
     creator = models.IntegerField() #id of the creator
