@@ -1,11 +1,12 @@
 from django.shortcuts import render, get_object_or_404
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_user_model
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
 from .models import UserProfile
 
 
-def login_view(request):
+def login(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
@@ -13,17 +14,39 @@ def login_view(request):
         user = authenticate(request, email=email, password=password)
         if user is not None:
             login(request, user)
-            # Erfolgreich eingeloggt
-            return JsonResponse({'message': 'Login erfolgreich'})
+            return JsonResponse({'message': 'Login succeseful'})
         else:
-            # Ungültige Anmeldeinformationen
-            return JsonResponse({'error': 'Ungültige Anmeldeinformationen'}, status=400)
+            return JsonResponse({'error': 'Invalid login information'}, status=400)
 
     # Falls GET- oder anderer Request-Methode
-    return JsonResponse({'error': 'Methode nicht erlaubt'}, status=405)
+    return JsonResponse({'error': 'Methode not allowed'}, status=405)
+
+
 #course logic for the user
 def get_current_course_lesson(request):
     return JsonResponse({"basicMorality": "10"})
+
+
+@csrf_exempt  # Disable CSRF for external requests (ensure security measures are in place)
+def register(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        password = data.get('password')
+        username = data.get('username')
+        print(email)
+        print(password)
+        print(username)
+        # Create a new user
+        User = get_user_model()
+        try:
+            user = User.objects.create_user(email=email, username=username, password=password)
+            login(request, user)
+            return JsonResponse({'message': 'Registration successful'}, status=201)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 def check_login(request):

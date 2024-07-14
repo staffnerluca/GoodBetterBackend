@@ -3,20 +3,19 @@ from django.db import models
 from django.utils import timezone
 
 class CustomUser(AbstractUser):
-    email = models.EmailField(unique=True)
+    email_address = models.EmailField(unique=True, verbose_name="email")
 
-    USERNAME_FIELD = email
-    REQUIRDED_FIELDS = []
+    USERNAME_FIELD = 'email_address'
+    REQUIRED_FIELDS = []
 
     def __str__(self):
-        return self.email
+        return self.email_address
 
 
 class UserProfile(models.Model):
     first_name = models.CharField(max_length=30)
     second_name = models.CharField(max_length=30)
     username = models.CharField(max_length=30)
-    email = models.CharField(max_length=50)
     country = models.CharField(max_length=2) #only country code
     age = models.IntegerField()
     isAdmin = models.BooleanField()
