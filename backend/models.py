@@ -1,11 +1,12 @@
 from django.db import models
 
 # Create your models here.
-class User(models.Model):
+class UserProfile(models.Model):
     first_name = models.CharField(max_length=30)
     second_name = models.CharField(max_length=30)
     username = models.CharField(max_length=30)
     email = models.CharField(max_length=50)
+    password = models.CharField(max_length=500)
     country = models.CharField(max_length=2) #only country code
     age = models.IntegerField()
     isAdmin = models.BooleanField()
@@ -31,13 +32,13 @@ class User(models.Model):
 
 
 class DoingGoodStreaks():
-    user = models.IntegerField()
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     date = models.DateField()
 
 
 class Course(models.Model):
     name = models.CharField(max_length=50)
-    creator = models.IntegerField() #id of the creator
+    creator = models.ForeignKey(UserProfile, on_delete=models.CASCADE) #id of the creator
     goal = models.TextField()
     moral_type = models.CharField(max_length=20) # is there a school of thought that is presented in this course
     course_type = models.CharField(max_length=2)
@@ -47,7 +48,7 @@ class CourseQuestion(models.Model):
     name = models.CharField(max_length=100)
     content = models.TextField()
     goal = models.TextField()
-    creator = models.IntegerField()
+    creator = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     #defines for which moral groups this can be relevant
     relevant_for = models.CharField(max_length=20)
     interactive = models.BooleanField()
@@ -71,13 +72,13 @@ class Issues(models.Model):
 
 
 class DoneGoodThings(models.Model):
-    user = models.IntegerField()
-    good_thing = models.IntegerField()
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    good_thing = models.ForeignKey(GoodThing, on_delete=models.CASCADE)
 
 
 class DoneQuestions(models.Model):
-    user = models.IntegerField()
-    course_question = models.IntegerField()
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    course_question = models.ForeignKey(CourseQuestion, on_delete=models.CASCADE)
 
 
 """
@@ -85,12 +86,12 @@ could be determined by the done Course Questions but if they change a finished c
 and it just saves server side calculation power to do it that way for a very moderate cost in memory
 """
 class DoneCourses(models.Model):
-    user = models.IntegerField()
-    coures = models.IntegerField()
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    coures = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 
-class DoingGoodNetworkPost():
-    creator = models.IntegerField()
+class DoingGoodNetworkPost(models.Model):
+    creator = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     content = models.TextField()
     post_date = models.DateField()
     # is it a comment to an other post if yes to which?
@@ -99,5 +100,5 @@ class DoingGoodNetworkPost():
 
 
 class LikedPosts(models.Model):
-    post = models.IntegerField()
-    user = models.IntegerField()
+    post = models.ForeignKey(DoingGoodNetworkPost, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
