@@ -1,12 +1,50 @@
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.utils import timezone
 
-# Create your models here.
+
+class UserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(email, password, **extra_fields)
+
+
+class User(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(unique=True)
+    username = models.CharField(max_length=30, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    
+    objects = UserManager()
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    def __str__(self):
+        return self.email
+   
+
 class UserProfile(models.Model):
     first_name = models.CharField(max_length=30)
     second_name = models.CharField(max_length=30)
     username = models.CharField(max_length=30)
     email = models.CharField(max_length=50)
-    password = models.CharField(max_length=500)
     country = models.CharField(max_length=2) #only country code
     age = models.IntegerField()
     isAdmin = models.BooleanField()
@@ -14,7 +52,7 @@ class UserProfile(models.Model):
     #moral alignment in %
     categorical_imperative = models.IntegerField()
     utilitarian = models.IntegerField()
-    virute_ethics = models.IntegerField()
+    virtue_ethics = models.IntegerField()
     animal_rights = models.IntegerField()
     longtermism = models.IntegerField()
 
@@ -22,7 +60,7 @@ class UserProfile(models.Model):
     doing_good_streak = models.IntegerField()
     not_eating_meat_streak = models.IntegerField()
     course_streak = models.IntegerField()
-    joined_at = models.DateField()
+    joined_at = models.DateField(default=timezone.now)
     total_time_on_the_app_in_minutes = models.BigIntegerField()
     total_amount_of_donations = models.IntegerField()
     donations_per_week_goal = models.IntegerField()
