@@ -1,28 +1,32 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
 from .models import UserProfile
 
 
-def login(request):
+@csrf_exempt
+def login_view(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-
-        user = authenticate(request, email=email, password=password)
+        data = json.loads(request.body)
+        email = data.get('email')
+        password = data.get('password')
+        print(email)
+        print(password)
+        user = authenticate(request, email_address=email, password=password)
         if user is not None:
             login(request, user)
+            print("I am here")
             return JsonResponse({'message': 'Login succeseful'})
         else:
             return JsonResponse({'error': 'Invalid login information'}, status=400)
-
-    # Falls GET- oder anderer Request-Methode
     return JsonResponse({'error': 'Methode not allowed'}, status=405)
 
 
 #course logic for the user
+@csrf_exempt
 def get_current_course_lesson(request):
     return JsonResponse({"basicMorality": "10"})
 
@@ -40,8 +44,8 @@ def register(request):
         # Create a new user
         User = get_user_model()
         try:
-            user = User.objects.create_user(email=email, username=username, password=password)
-            login(request, user)
+            user = User.objects.create_user(email_address=email, username=username, password=password)
+            #login(request)
             return JsonResponse({'message': 'Registration successful'}, status=201)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)

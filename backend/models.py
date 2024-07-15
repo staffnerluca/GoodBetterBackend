@@ -64,7 +64,7 @@ class CourseQuestion(models.Model):
     #multiple choice quizes are stored with a special syntax in content
     multiple_choice_quiz = models.BooleanField()
     info_screen = models.BooleanField()
-    image = models.ImageField()
+    image = models.CharField(max_length=1000)
     furhter_resources = models.TextField()
 
 
