@@ -5,8 +5,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import F, Q, Sum # F: access field values directely; Q: advanced conditions
 from django.db.models.functions import Abs
+from .models import UserProfile, EthicalTypes, GoodThing, DoneGoodThings
+import random
 import json
-from .models import UserProfile, EthicalTypes, GoodThing
 
 
 
@@ -139,5 +140,9 @@ def get_good_things_of_the_day(request):
     if not user_ethic_type:
         return JsonResponse({"error": "No ethical type found"})
     relevant_donations = GoodThing.objects.filter(relevnat_for=user_ethic_type, thing_type = "donation")
-    relevant_other_good_thing = GoodThing.objects.filter(relevant)
+    relevant_other_good_thing = GoodThing.objects.filter(relevant_for = user_ethic_type).exclude("donation")
+    
+    completed_good_things = DoneGoodThings.objects.filter(user=user).values_list('good_thing_id', flat=True)
+    possible_relevant_other_good_things = [relevant_other_good_thing for good_thing in relevant_other_good_thing if good_thing.id not in completed_good_things or good_thing.multiple_times]
 
+    return JsonResponse({"donation": random.choice(relevant_donations), "other_good_thing": random.choice(possible_relevant_other_good_things)})
