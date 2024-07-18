@@ -13,11 +13,12 @@ class CustomUser(AbstractUser):
 
 
 class UserProfile(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=30)
     second_name = models.CharField(max_length=30)
     username = models.CharField(max_length=30)
     country = models.CharField(max_length=2) #only country code
-    age = models.IntegerField()
+    brit_date = models.DateField()
     isAdmin = models.BooleanField()
 
     #moral alignment in %
@@ -38,11 +39,22 @@ class UserProfile(models.Model):
     #the days a person wants to eat meat. For example if it is monday and friday MoFr
     meat_days = models.CharField(max_length=12)
     goodness_score = models.IntegerField()
+    current_leaderboard_group = models.ForeignKey(models)
 
 
 class DoingGoodStreaks():
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     date = models.DateField()
+
+
+class EthicalTypes():
+    name = models.CharField(max_length=100)
+    #the et of an individual is determined as the et closest to their values
+    categorical_imperative = models.IntegerField()
+    utilitarian = models.IntegerField()
+    virtue_ethics = models.IntegerField()
+    animal_rights = models.IntegerField()
+    longtermism = models.IntegerField()
 
 
 class Course(models.Model):
@@ -73,7 +85,9 @@ class GoodThing(models.Model):
     impact = models.CharField(max_length=200)
     creator = models.CharField(max_length=20)
     #defines for which moral groups this can be relevant
-    relevant_for = models.CharField(max_length=20)
+    relevant_for = models.ManyToManyField('EthicalTypes')
+    thing_type = models.CharField(max_length=20) # for example donation, personal, voluntary opportunity...
+    multiple_times = models.BooleanField()
 
 
 class Issues(models.Model):
