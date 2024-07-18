@@ -88,6 +88,8 @@ class GoodThing(models.Model):
     relevant_for = models.ManyToManyField('EthicalTypes')
     thing_type = models.CharField(max_length=20) # for example donation, personal, voluntary opportunity...
     multiple_times = models.BooleanField()
+    link = models.TextField()
+    content = models.TextField()
 
 
 class Issues(models.Model):
