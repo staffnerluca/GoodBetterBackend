@@ -10,6 +10,7 @@ import random
 import json
 from datetime import timedelta
 from django.utils import timezone
+from django.core import serializers
 
 
 @csrf_exempt
@@ -94,8 +95,7 @@ def create_user_profile(request):
             print("Error when creating UserProfile: "+e)
 
 
-@csrf_exempt
-def get_eating_meat_days(request, username):
+def get_eating_meat_days(username):
     meat_days_dic = {
         "Mo": 0,
         "Di": 0,
@@ -109,7 +109,20 @@ def get_eating_meat_days(request, username):
     user_meat_days = user.meat_days.split(",")
     for day in user_meat_days:
         meat_days_dic[day] = 1
-    return JsonResponse({"meat_days": meat_days_dic})
+    return meat_days_dic
+
+
+def get_data_for_vegetarian_streak_page(request, username):
+    user = CustomUser.objects.get(username=username)
+    userProf = UserProfile.objects.get(user=user)
+    if(not userProf.wants_to_become_vegetarian):
+        return JsonResponse({"Vegetarian": "False"})
+    data = {
+        "meat_days": get_eating_meat_days(),
+        "not_eating_meat_streak": userProf.not_eating_meat_streak
+    }
+    return JsonResponse(data)
+
 
 
 # can only be created once. After that the username needs to be changed
@@ -137,3 +150,9 @@ def create_test_users(request):
 
     print("10 example datasets created.")
     return JsonResponse({"Status": "Created"})
+
+
+def get_all_users(request):
+    profiles = UserProfile.objects.all()
+    profiles_data = serializers.serialize('json', profiles)
+    return JsonResponse(profiles_data, safe=False)
