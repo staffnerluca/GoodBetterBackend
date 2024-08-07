@@ -5,10 +5,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import F, Q, Sum # F: access field values directely; Q: advanced conditions
 from django.db.models.functions import Abs
-from .models import UserProfile
+from .models import UserProfile, CustomUser
 import random
 import json
-
+from datetime import timedelta
+from django.utils import timezone
 
 
 @csrf_exempt
@@ -109,3 +110,30 @@ def get_eating_meat_days(request, username):
     for day in user_meat_days:
         meat_days_dic[day] = 1
     return JsonResponse({"meat_days": meat_days_dic})
+
+
+# can only be created once. After that the username needs to be changed
+def create_test_users(request):
+    print("Start creating test users")
+    for i in range(10):
+        email = f"new_user{i}@example.com"
+        user = CustomUser.objects.create_user(username=email, email_address=email, password='password')
+
+        UserProfile.objects.create(
+            user=user,
+            first_name=f"FirstName{i}",
+            second_name=f"SecondName{i}",
+            username=f"username{i}",
+            country="US",
+            birth_date=timezone.now().date() - timedelta(days=i * 365),
+            isAdmin=bool(i % 2),
+            wants_to_become_vegetarian=bool(i % 3),
+            not_eating_meat_streak=i * 5,
+            course_streak=i * 2,
+            joined_at=timezone.now().date() - timedelta(days=i * 30),
+            total_time_on_the_app_in_minutes=i * 100,
+            meat_days="Mo,Fr" if i % 2 == 0 else "Tu,Th"
+        )
+
+    print("10 example datasets created.")
+    return JsonResponse({"Status": "Created"})

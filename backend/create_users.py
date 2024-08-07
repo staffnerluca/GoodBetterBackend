@@ -3,11 +3,9 @@ from django.utils import timezone
 from .models import CustomUser, UserProfile
 
 for i in range(10):
-    # Create a CustomUser instance
     email = f"user{i}@example.com"
     user = CustomUser.objects.create_user(email_address=email, password='password')
 
-    # Create a UserProfile instance
     UserProfile.objects.create(
         user=user,
         first_name=f"FirstName{i}",
