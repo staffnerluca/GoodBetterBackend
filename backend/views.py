@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import F, Q, Sum # F: access field values directely; Q: advanced conditions
 from django.db.models.functions import Abs
-from .models import UserProfile, EthicalTypes, GoodThing, DoneGoodThings
+from .models import UserProfile
 import random
 import json
 
@@ -62,10 +62,6 @@ def create_course():
     pass
 
 
-def create_good_thing():
-    pass
-
-
 @csrf_exempt
 def create_user_profile(request):
     if request.method == 'POST':
@@ -97,52 +93,19 @@ def create_user_profile(request):
             print("Error when creating UserProfile: "+e)
 
 
-# Update
-def update_user_moral_alignment(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            ci = data["categorical_imperative"]
-            ut = data["utilitarian"]
-            ve = data["virute_ethics"]
-            ar = data["animal_rights"]
-            lo = data["longtermism"]
-            user_id = data["user_id"]
-            user = get_object_or_404(UserProfile, id=user_id)
-            user.categorical_imperative += ci
-            user.utilitarian += ut
-            user.virtue_ethics += ve
-            user.animal_rights += ar
-            user.longtermism += lo
-            user.save()
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Inavalid JSOn"}, status = 400)
-
-
-# GET stuff
-def get_user_ethical_type(user_profile):
-    ethical_type = EthicalTypes.objects.annotate(
-        dif = (
-            Abs(F('categorical_imperative') - user_profile.categoric_imperative) +
-            Abs(F('utilitarian') - user_profile.utilitarian) +
-            Abs(F('virtue_ethics') - user_profile.virtue_ethics) +
-            Abs(F('animal_rights') - user_profile.animal_rights) +
-            Abs(F('longtermism') - user_profile.longtermism)
-        )
-    ).order_by('dif')
-    return ethical_type.first()
-
-
-def get_good_things_of_the_day(request):
-    id = request['user_id']
-    user = UserProfile.objects.get(user_id = id)
-    user_ethic_type = get_user_ethical_type(user)
-    if not user_ethic_type:
-        return JsonResponse({"error": "No ethical type found"})
-    relevant_donations = GoodThing.objects.filter(relevnat_for=user_ethic_type, thing_type = "donation")
-    relevant_other_good_thing = GoodThing.objects.filter(relevant_for = user_ethic_type).exclude("donation")
-    
-    completed_good_things = DoneGoodThings.objects.filter(user=user).values_list('good_thing_id', flat=True)
-    possible_relevant_other_good_things = [relevant_other_good_thing for good_thing in relevant_other_good_thing if good_thing.id not in completed_good_things or good_thing.multiple_times]
-
-    return JsonResponse({"donation": random.choice(relevant_donations), "other_good_thing": random.choice(possible_relevant_other_good_things)})
+@csrf_exempt
+def get_eating_meat_days(request, username):
+    meat_days_dic = {
+        "Mo": 0,
+        "Di": 0,
+        "We": 0,
+        "Th": 0,
+        "Fr": 0,
+        "Sa": 0,
+        "Su": 0
+    }
+    user = get_object_or_404(UserProfile, username = username)
+    user_meat_days = user.meat_days.split(",")
+    for day in user_meat_days:
+        meat_days_dic[day] = 1
+    return JsonResponse({"meat_days": meat_days_dic})
