@@ -13,7 +13,7 @@ class CustomUser(AbstractUser):
 
 
 class UserProfile(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=30)
     second_name = models.CharField(max_length=30)
     username = models.CharField(max_length=30)
@@ -28,6 +28,12 @@ class UserProfile(models.Model):
     total_time_on_the_app_in_minutes = models.BigIntegerField()
     #the days a person wants to eat meat. For example if it is monday and friday Mo,Fr
     meat_days = models.CharField(max_length=18)
+
+
+class Days(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    date = models.DateField()
+    vegetarian_status = models.CharField(max_length=1) # v = didn't eat meat, m = ate meat; f = it was a free day
 
 
 class Course(models.Model):

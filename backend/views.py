@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import F, Q, Sum # F: access field values directely; Q: advanced conditions
 from django.db.models.functions import Abs
-from .models import UserProfile, CustomUser
+from .models import UserProfile, CustomUser, Days
 import random
 import json
 from datetime import timedelta
@@ -112,6 +112,15 @@ def get_eating_meat_days(username):
     return meat_days_dic
 
 
+def get_calendar(userProfile):
+    days = Days.objects.filter(user=userProfile)
+    days_data = [{
+        "date": day.date,
+        "vegetarian_status": days.vegetarian_status
+    } for day in days]
+    return days_data
+
+
 def get_data_for_vegetarian_streak_page(request, username):
     user = CustomUser.objects.get(username=username)
     userProf = UserProfile.objects.get(user=user)
@@ -119,8 +128,9 @@ def get_data_for_vegetarian_streak_page(request, username):
         return JsonResponse({"Vegetarian": "False"})
     data = {
         "meat_days": get_eating_meat_days(),
-        "not_eating_meat_streak": userProf.not_eating_meat_streak
-    }
+        "not_eating_meat_streak": userProf.not_eating_meat_streak,
+        "calendar": get_calendar(userProf)        
+        }
     return JsonResponse(data)
 
 
@@ -156,3 +166,9 @@ def get_all_users(request):
     profiles = UserProfile.objects.all()
     profiles_data = serializers.serialize('json', profiles)
     return JsonResponse(profiles_data, safe=False)
+
+
+def get_all_days(request):
+    days = Days.objects.all()
+    days_json = serializers.serialize('json', days)
+    return JsonResponse(days_json, safe=False)
