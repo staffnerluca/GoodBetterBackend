@@ -117,18 +117,31 @@ def get_calendar(userProfile):
     days = Days.objects.filter(user=userProfile)
     days_data = [{
         "date": day.date,
-        "vegetarian_status": days.vegetarian_status
+        "vegetarian_status": day.vegetarian_status
     } for day in days]
     return days_data
 
 
-def get_data_for_vegetarian_streak_page(request, username):
-    user = CustomUser.objects.get(username=username)
-    userProf = UserProfile.objects.get(user=user)
+def get_calendar_test(request):
+    username = request.GET.get('username')
+    userProfile = get_object_or_404(UserProfile, username = username)
+    days = Days.objects.filter(user=userProfile)
+    days_data = [{
+        "date": day.date,
+        "vegetarian_status": day.vegetarian_status
+    } for day in days]
+    return JsonResponse(days_data, safe=False)
+
+
+def get_data_for_vegetarian_streak_page(request):
+    username = request.GET.get("username")
+    if not username:
+        return JsonResponse({"Error": "No username given"})
+    userProf = UserProfile.objects.get(username=username)
     if(not userProf.wants_to_become_vegetarian):
         return JsonResponse({"Vegetarian": "False"})
     data = {
-        "meat_days": get_eating_meat_days(),
+        "meat_days": get_eating_meat_days(username),
         "not_eating_meat_streak": userProf.not_eating_meat_streak,
         "calendar": get_calendar(userProf)        
         }
