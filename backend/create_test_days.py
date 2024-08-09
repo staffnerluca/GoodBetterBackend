@@ -14,4 +14,4 @@ for i in range(10):
                 date = day,
                 vegetarian_status = vegetarian_status
             )
-    print("Created days")
+print("Created days")

@@ -3,7 +3,7 @@ from django.utils import timezone
 from .models import CustomUser, UserProfile
 
 for i in range(10):
-    email = f"user{i}@example.com"
+    email = f"user{i}@ex.com"
     user = CustomUser.objects.create_user(email_address=email, password='password')
 
     UserProfile.objects.create(

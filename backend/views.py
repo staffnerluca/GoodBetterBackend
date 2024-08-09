@@ -11,6 +11,7 @@ import json
 from datetime import timedelta
 from django.utils import timezone
 from django.core import serializers
+from django.db import transaction
 
 
 @csrf_exempt
@@ -160,6 +161,21 @@ def create_test_users(request):
 
     print("10 example datasets created.")
     return JsonResponse({"Status": "Created"})
+
+
+def create_test_days(request):
+    for i in range(10):
+        user_profile = UserProfile.objects.get(username="username1")
+        with transaction.atomic():
+            for i in range(30):
+                day = timezone.now().date() - timezone.timedelta(days = i)
+                vegetarian_status = random.choice(["v", "m", "f"])
+                Days.objects.create(
+                    user = user_profile,
+                    date = day,
+                    vegetarian_status = vegetarian_status
+                )
+    return JsonResponse({"Status": "Created days"})
 
 
 def get_all_users(request):
