@@ -132,20 +132,25 @@ def get_calendar_test(request):
     } for day in days]
     return JsonResponse(days_data, safe=False)
 
-
+@csrf_exempt
 def get_data_for_vegetarian_streak_page(request):
+    print("start getting data")
+    return JsonResponse({"test": "tester"})
+    """
     username = request.GET.get("username")
     if not username:
         return JsonResponse({"Error": "No username given"})
     userProf = UserProfile.objects.get(username=username)
     if(not userProf.wants_to_become_vegetarian):
         return JsonResponse({"Vegetarian": "False"})
+    #check how to handle duplicates later 
     data = {
         "meat_days": get_eating_meat_days(username),
         "not_eating_meat_streak": userProf.not_eating_meat_streak,
         "calendar": get_calendar(userProf)        
         }
     return JsonResponse(data)
+    """
 
 
 
