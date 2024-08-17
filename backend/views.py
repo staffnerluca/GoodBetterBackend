@@ -12,33 +12,36 @@ from datetime import timedelta
 from django.utils import timezone
 from django.core import serializers
 from django.db import transaction
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+from rest_framework import status
 
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def login_view(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         email = data.get('email')
         password = data.get('password')
-        print(email)
-        print(password)
         user = authenticate(request, email_address=email, password=password)
         if user is not None:
             login(request, user)
-            print("I am here")
-            return JsonResponse({'message': 'Login succeseful'})
+            return Response({'message': 'Login succeseful'}, status=status.HTTP_200_OK)
         else:
-            return JsonResponse({'error': 'Invalid login information'}, status=400)
-    return JsonResponse({'error': 'Methode not allowed'}, status=405)
+            return Response({'error': 'Invalid login information'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'error': 'Methode not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-#course logic for the user
-@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_current_course_lesson(request):
-    return JsonResponse({"basicMorality": "10"})
+    return Response({"basicMorality": "10"})
 
 
-@csrf_exempt  # Disable CSRF for external requests (ensure security measures are in place)
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def register(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -48,7 +51,6 @@ def register(request):
         print(email)
         print(password)
         print(username)
-        # Create a new user
         User = get_user_model()
         try:
             user = User.objects.create_user(email_address=email, username=username, password=password)
@@ -65,35 +67,22 @@ def create_course():
     pass
 
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def create_user_profile(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            fn = data['first_name']
-            sn = data['second_name']
-            un = data['username']
-            c = data['country']
-            bd = data['birth_date']
-            ci = data['categorical_imperative']
-            ve = data['virtue_ethics']
-            ar = data['animal_rights']
-            wbv = data['wants_to_become_vegetarian']
-            dnpg = data['donations_per_week_goal']
-
-            user_profile = UserProfile()
-            user_profile.first_name = fn
-            user_profile.second_name = sn
-            user_profile.username = un
-            user_profile.country = c
-            user_profile.brit_date = bd
-            user_profile.categorical_imperative = ci
-            user_profile.virtue_ethics = ve
-            user_profile.animal_rights = ar
-            user_profile.wants_to_become_vegetarian = wbv
-            user_profile.donations_per_week_goal = dnpg
-        except Exception as e:
-            print("Error when creating UserProfile: "+e)
+    data = request.data
+    try:
+        user_profile = UserProfile.objects.create(
+            first_name=data['first_name'],
+            second_name=data['second_name'],
+            username=data['username'],
+            country=data['country'],
+            birth_date=data['birth_date'],
+            wants_to_become_vegetarian=data['wants_to_become_vegetarian']
+        )
+        return Response({"message": "Created user"}, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({'error': f"Error when creating UserProfile: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 def get_eating_meat_days(username):
@@ -132,11 +121,10 @@ def get_calendar_test(request):
     } for day in days]
     return JsonResponse(days_data, safe=False)
 
+
 @csrf_exempt
 def get_data_for_vegetarian_streak_page(request):
     print("start getting data")
-    return JsonResponse({"test": "tester"})
-    """
     username = request.GET.get("username")
     if not username:
         return JsonResponse({"Error": "No username given"})
@@ -150,37 +138,43 @@ def get_data_for_vegetarian_streak_page(request):
         "calendar": get_calendar(userProf)        
         }
     return JsonResponse(data)
-    """
 
 
 
 # can only be created once. After that the username needs to be changed
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def create_test_users(request):
-    print("Start creating test users")
-    for i in range(10):
-        email = f"new_user{i}@example.com"
-        user = CustomUser.objects.create_user(username=email, email_address=email, password='password')
+    try:
 
-        UserProfile.objects.create(
-            user=user,
-            first_name=f"FirstName{i}",
-            second_name=f"SecondName{i}",
-            username=f"username{i}",
-            country="US",
-            birth_date=timezone.now().date() - timedelta(days=i * 365),
-            isAdmin=bool(i % 2),
-            wants_to_become_vegetarian=bool(i % 3),
-            not_eating_meat_streak=i * 5,
-            course_streak=i * 2,
-            joined_at=timezone.now().date() - timedelta(days=i * 30),
-            total_time_on_the_app_in_minutes=i * 100,
-            meat_days="Mo,Fr" if i % 2 == 0 else "Tu,Th"
-        )
+        for i in range(10):
+            email = f"new_user{i}@example.com"
+            user = CustomUser.objects.create_user(username=email, email_address=email, password='password')
 
-    print("10 example datasets created.")
-    return JsonResponse({"Status": "Created"})
+            UserProfile.objects.create(
+                user=user,
+                first_name=f"FirstName{i}",
+                second_name=f"SecondName{i}",
+                username=f"username{i}",
+                country="US",
+                birth_date=timezone.now().date() - timedelta(days=i * 365),
+                isAdmin=bool(i % 2),
+                wants_to_become_vegetarian=bool(i % 3),
+                not_eating_meat_streak=i * 5,
+                course_streak=i * 2,
+                joined_at=timezone.now().date() - timedelta(days=i * 30),
+                total_time_on_the_app_in_minutes=i * 100,
+                meat_days="Mo,Fr" if i % 2 == 0 else "Tu,Th"
+            )
+
+        print("10 example datasets created.")
+        return Response({"message": "Created 10 test users"}, status=status.HTTP_201_CREATED)
+    except Exception as error:
+        return Response({"message":"Users where already created."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def create_test_days(request):
     for i in range(10):
         user_profile = UserProfile.objects.get(username="username1")
@@ -193,16 +187,20 @@ def create_test_days(request):
                     date = day,
                     vegetarian_status = vegetarian_status
                 )
-    return JsonResponse({"Status": "Created days"})
+    return Response({"message": "Created days"}, status=status.HTTP_201_CREATED)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_all_users(request):
     profiles = UserProfile.objects.all()
     profiles_data = serializers.serialize('json', profiles)
-    return JsonResponse(profiles_data, safe=False)
+    return Response(profiles_data, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_all_days(request):
     days = Days.objects.all()
     days_json = serializers.serialize('json', days)
-    return JsonResponse(days_json, safe=False)
+    return Response(days_json, status=status.HTTP_200_OK)
