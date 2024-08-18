@@ -35,7 +35,7 @@ def login_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def get_current_course_lesson(request):
     return Response({"basicMorality": "10"})
 
@@ -55,9 +55,9 @@ def register(request):
         try:
             user = User.objects.create_user(email_address=email, username=username, password=password)
             login(request)
-            return JsonResponse({'message': 'Registration successful'}, status=201)
+            return Response({'message': 'Registration successful'}, status=status.HTTP_201_CREATED)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return Response({'error': str(e)}, status=status.HTTP_200_OK)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
  
@@ -68,7 +68,7 @@ def create_course():
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def create_user_profile(request):
     data = request.data
     try:
@@ -88,7 +88,7 @@ def create_user_profile(request):
 def get_eating_meat_days(username):
     meat_days_dic = {
         "Mo": 0,
-        "Di": 0,
+        "Tu": 0,
         "We": 0,
         "Th": 0,
         "Fr": 0,
@@ -104,11 +104,13 @@ def get_eating_meat_days(username):
 
 def get_calendar(userProfile):
     days = Days.objects.filter(user=userProfile)
-    days_data = [{
-        "date": day.date,
-        "vegetarian_status": day.vegetarian_status
-    } for day in days]
-    return days_data
+    days_data = {}
+    for day in days:
+        days_data[day.date] = {
+            "date" : day.date,
+            "vegetarian_status" : day.vegetarian_status
+        }
+    return list(days_data.values())
 
 
 def get_calendar_test(request):
@@ -119,25 +121,26 @@ def get_calendar_test(request):
         "date": day.date,
         "vegetarian_status": day.vegetarian_status
     } for day in days]
-    return JsonResponse(days_data, safe=False)
+    return Response(days_data, status=status.HTTP_200_OK)
 
 
-@csrf_exempt
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def get_data_for_vegetarian_streak_page(request):
     print("start getting data")
     username = request.GET.get("username")
     if not username:
-        return JsonResponse({"Error": "No username given"})
+        return Response({"Error": "No username given"}, status=status.HTTP_400_BAD_REQUEST)
     userProf = UserProfile.objects.get(username=username)
     if(not userProf.wants_to_become_vegetarian):
-        return JsonResponse({"Vegetarian": "False"})
+        return Response({"Vegetarian": "False"}, status=status.HTTP_200_OK)
     #check how to handle duplicates later 
     data = {
         "meat_days": get_eating_meat_days(username),
         "not_eating_meat_streak": userProf.not_eating_meat_streak,
         "calendar": get_calendar(userProf)        
         }
-    return JsonResponse(data)
+    return Response(data, status=status.HTTP_200_OK)
 
 
 
@@ -146,7 +149,6 @@ def get_data_for_vegetarian_streak_page(request):
 @permission_classes([AllowAny])
 def create_test_users(request):
     try:
-
         for i in range(10):
             email = f"new_user{i}@example.com"
             user = CustomUser.objects.create_user(username=email, email_address=email, password='password')
@@ -191,7 +193,7 @@ def create_test_days(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def get_all_users(request):
     profiles = UserProfile.objects.all()
     profiles_data = serializers.serialize('json', profiles)
@@ -199,7 +201,7 @@ def get_all_users(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def get_all_days(request):
     days = Days.objects.all()
     days_json = serializers.serialize('json', days)

@@ -1,8 +1,21 @@
 from django.urls import path
-from .views import get_current_course_lesson, get_eating_meat_days, login_view, register, create_test_users, get_all_users, create_test_days, get_calendar, get_data_for_vegetarian_streak_page
+from .views import (
+    get_current_course_lesson,
+    get_eating_meat_days,
+    login_view,
+    register,
+    create_test_users,
+    get_all_users,
+    create_test_days,
+    get_calendar,
+    get_data_for_vegetarian_streak_page,
+    create_user_profile,
+    get_calendar_test,
+    get_all_days,
+)
 
 urlpatterns = [
-    path('get_current_course_lesson/', get_current_course_lesson),
+    path('get_current_course_lesson/', get_current_course_lesson, name='get_current_course_lesson'),
     path('register/', register, name='register'),
     path('login/', login_view, name='login'),
     path('get_meat_days/', get_eating_meat_days, name='get_meat_days'),
@@ -10,5 +23,8 @@ urlpatterns = [
     path('get_all_users/', get_all_users, name='get_all_users'),
     path('create_test_days/', create_test_days, name='create_test_days'),
     path('get_calendar/', get_calendar, name='get_calendar'),
-    path('get_data_for_vegetarian_streak_page/', get_data_for_vegetarian_streak_page, name='get_data_for_vegetarian_streak_page')
+    path('get_data_for_vegetarian_streak_page/', get_data_for_vegetarian_streak_page, name='get_data_for_vegetarian_streak_page'),
+    path('create_user_profile/', create_user_profile, name='create_user_profile'),
+    path('get_calendar_test/', get_calendar_test, name='get_calendar_test'),
+    path('get_all_days/', get_all_days, name='get_all_days'),
 ]
