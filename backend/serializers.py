@@ -31,7 +31,18 @@ class DaysSerializer(serializers.ModelSerializer):
 class CourseQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseQuestion
-        fields = ['id', 'name', 'content', 'creator', 'image', 'course']
+        fields = [
+            'id', 
+            'name', 
+            'content', 
+            'image', 
+            'course', 
+            'is_boolean', 
+            'options', 
+            'next_question_if_true', 
+            'next_question_if_false', 
+            'is_first'
+        ]
 
 
 class CourseSerializer(serializers.ModelSerializer):

@@ -38,19 +38,19 @@ class Days(models.Model):
 
 class Course(models.Model):
     name = models.CharField(max_length=50)
-    creator = models.ForeignKey(UserProfile, on_delete=models.CASCADE) #id of the creator
-    goal = models.TextField()
-    course_type = models.CharField(max_length=2)
-    
+    goal = models.TextField()    
+
 
 class CourseQuestion(models.Model):
     name = models.CharField(max_length=100)
     content = models.TextField()
-    creator = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     image = models.CharField(max_length=1000)
     course = models.ForeignKey(Course, on_delete=models.DO_NOTHING)
+    is_boolean = models.BooleanField(default=True)
+    options = models.CharField(max_length=100)
     next_question_if_true = models.ForeignKey('self', related_name='next_if_true', on_delete=models.SET_NULL, null=True, blank=True)
     next_question_if_false = models.ForeignKey('self', related_name='next_if_false', on_delete=models.SET_NULL, null=True, blank=True)
+    is_first = models.BooleanField(default=False)
 
 
 class DoneQuestions(models.Model):
