@@ -40,23 +40,17 @@ class Course(models.Model):
     name = models.CharField(max_length=50)
     creator = models.ForeignKey(UserProfile, on_delete=models.CASCADE) #id of the creator
     goal = models.TextField()
-    moral_type = models.CharField(max_length=20) # is there a school of thought that is presented in this course
     course_type = models.CharField(max_length=2)
-
+    
 
 class CourseQuestion(models.Model):
     name = models.CharField(max_length=100)
     content = models.TextField()
-    goal = models.TextField()
     creator = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    #defines for which moral groups this can be relevant
-    relevant_for = models.CharField(max_length=20)
-    interactive = models.BooleanField()
-    #multiple choice quizes are stored with a special syntax in content
-    multiple_choice_quiz = models.BooleanField()
-    info_screen = models.BooleanField()
     image = models.CharField(max_length=1000)
-    furhter_resources = models.TextField()
+    course = models.ForeignKey(Course, on_delete=models.DO_NOTHING)
+    next_question_if_true = models.ForeignKey('self', related_name='next_if_true', on_delete=models.SET_NULL, null=True, blank=True)
+    next_question_if_false = models.ForeignKey('self', related_name='next_if_false', on_delete=models.SET_NULL, null=True, blank=True)
 
 
 class DoneQuestions(models.Model):

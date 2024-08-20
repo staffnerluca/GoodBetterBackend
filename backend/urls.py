@@ -12,6 +12,7 @@ from .views import (
     create_user_profile,
     get_calendar_test,
     get_all_days,
+    get_questions_by_course,
 )
 
 urlpatterns = [
@@ -26,5 +27,6 @@ urlpatterns = [
     path('get_data_for_vegetarian_streak_page/', get_data_for_vegetarian_streak_page, name='get_data_for_vegetarian_streak_page'),
     path('create_user_profile/', create_user_profile, name='create_user_profile'),
     path('get_calendar_test/', get_calendar_test, name='get_calendar_test'),
+    path('api/course-questions/<int:course_id>/', get_questions_by_course, name='get_questions_by_course'),
     path('get_all_days/', get_all_days, name='get_all_days'),
 ]

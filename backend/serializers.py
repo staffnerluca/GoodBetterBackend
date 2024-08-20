@@ -28,24 +28,16 @@ class DaysSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'date', 'vegetarian_status']
 
 
-class CourseSerializer(serializers.ModelSerializer):
-    creator = UserProfileSerializer()
-
-    class Meta:
-        model = Course
-        fields = ['id', 'name', 'creator', 'goal', 'moral_type', 'course_type']
-
-
 class CourseQuestionSerializer(serializers.ModelSerializer):
-    creator = UserProfileSerializer()
-
     class Meta:
         model = CourseQuestion
-        fields = [
-            'id', 'name', 'content', 'goal', 'creator', 
-            'relevant_for', 'interactive', 'multiple_choice_quiz', 
-            'info_screen', 'image', 'furhter_resources'
-        ]
+        fields = ['id', 'name', 'content', 'creator', 'image', 'course']
+
+
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ['id', 'name', 'creator', 'goal', 'course_type']
 
 
 class DoneQuestionsSerializer(serializers.ModelSerializer):

@@ -5,7 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import F, Q, Sum # F: access field values directely; Q: advanced conditions
 from django.db.models.functions import Abs
-from .models import UserProfile, CustomUser, Days
+from .models import UserProfile, CustomUser, Days, Course, CourseQuestion
+from .serializers import CourseQuestionSerializer, CourseSerializer, UserProfileSerializer
 import random
 import json
 from datetime import timedelta
@@ -34,32 +35,16 @@ def login_view(request):
     return Response({'error': 'Methode not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register(request):
+    return Response({"message":"success"}, status = status.HTTP_200_OK)
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_current_course_lesson(request):
     return Response({"basicMorality": "10"})
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def register(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        email = data.get('email')
-        password = data.get('password')
-        username = data.get('username')
-        print(email)
-        print(password)
-        print(username)
-        User = get_user_model()
-        try:
-            user = User.objects.create_user(email_address=email, username=username, password=password)
-            login(request)
-            return Response({'message': 'Registration successful'}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_200_OK)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
  
 
 # Creating stuff
@@ -143,6 +128,21 @@ def get_data_for_vegetarian_streak_page(request):
     return Response(data, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+def get_questions_by_course(request, course_id):
+    try:
+        questions = CourseQuestion.objects.filter(course_id=course_id)
+        if not questions.exists():
+            return Response({'error': 'No questions found for this course'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = CourseQuestionSerializer(questions, many=True)
+        
+        questions_dict = {question['id']: question for question in serializer.data}
+        
+        return Response(questions_dict)
+    except CourseQuestion.DoesNotExist:
+        return Response({'error': 'Course does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    
 
 # can only be created once. After that the username needs to be changed
 @api_view(['POST'])
@@ -198,6 +198,140 @@ def get_all_users(request):
     profiles = UserProfile.objects.all()
     profiles_data = serializers.serialize('json', profiles)
     return Response(profiles_data, status=status.HTTP_200_OK)
+
+
+def create_example_course_questions():
+    # Begin a transaction to ensure all-or-nothing creation
+    with transaction.atomic():
+        # Create the course
+        course = Course.objects.create(
+            name="What I believe and what I should believe",
+            creator=UserProfile.objects.get(username="Henry"),  # Adjust if creator's identification is different
+            goal="Teaches basics of morality and starts to ask relevant questions"
+        )
+        
+        # Create questions
+        question_1 = CourseQuestion.objects.create(
+            name="Eat Meat?",
+            content="Do you eat meat?",
+            image="",
+            course=course,
+            is_first=True
+        )
+        
+        question_2_yes = CourseQuestion.objects.create(
+            name="Factory-Farmed Meat?",
+            content="Do you eat factory-farmed meat?",
+            image="",
+            course=course
+        )
+        
+        question_3_yes = CourseQuestion.objects.create(
+            name="Spend on Meat?",
+            content="On average, how much do you spend on meat-eating every week?",
+            image="",
+            course=course
+        )
+        
+        question_4_yes = CourseQuestion.objects.create(
+            name="Meat Proportions?",
+            content="What proportion of meat you eat is factory-farmed, and what proportion of meat you eat is non-factory farmed?",
+            image="",
+            course=course
+        )
+        
+        question_5_yes = CourseQuestion.objects.create(
+            name="Types of Meat?",
+            content="In proportion, what types of meat do you eat? (beef, chicken, pork, fish, …)",
+            image="",
+            course=course
+        )
+        
+        question_3_no = CourseQuestion.objects.create(
+            name="Spend on Meat?",
+            content="On average, how much do you spend on meat-eating every week?",
+            image="",
+            course=course
+        )
+        
+        question_4_no = CourseQuestion.objects.create(
+            name="Types of Meat?",
+            content="In proportion, what types of meat do you eat? (beef, chicken, pork, fish, …)",
+            image="",
+            course=course
+        )
+        
+        question_6 = CourseQuestion.objects.create(
+            name="Slavery Wrong?",
+            content="If you have to bet, would you bet that slavery is, in fact, morally wrong?",
+            image="",
+            course=course
+        )
+        
+        question_7 = CourseQuestion.objects.create(
+            name="Factory-Farmed Meat Wrong?",
+            content="If you have to bet, would you bet that eating factory-farmed meat is, in fact, morally wrong?",
+            image="",
+            course=course
+        )
+        
+        question_8_yes = CourseQuestion.objects.create(
+            name="Why Factory-Farmed Meat?",
+            content="Then, why do you still eat factory-farmed meat?",
+            image="",
+            course=course
+        )
+        
+        question_8_no = CourseQuestion.objects.create(
+            name="Why Permissible?",
+            content="Why is eating factory-farmed meat morally permissible?",
+            image="",
+            course=course
+        )
+        
+        # Link questions based on the provided flow
+        question_1.next_question_if_true = question_2_yes
+        question_1.next_question_if_false = question_2_yes
+
+        question_2_yes.next_question_if_true = question_3_yes
+        question_2_yes.next_question_if_false = question_3_no
+
+        question_3_yes.next_question_if_true = question_4_yes
+        question_3_yes.next_question_if_false = question_4_yes
+
+        question_4_yes.next_question_if_true = question_5_yes
+        question_4_yes.next_question_if_false = question_5_yes
+
+        question_3_no.next_question_if_true = question_4_no
+        question_3_no.next_question_if_false = question_4_no
+
+        question_4_no.next_question_if_true = question_6
+        question_4_no.next_question_if_false = question_6
+
+        question_6.next_question_if_true = question_7
+        question_6.next_question_if_false = question_7
+
+        question_7.next_question_if_true = question_8_yes
+        question_7.next_question_if_false = question_8_no
+
+        question_8_yes.next_question_if_true = None
+        question_8_yes.next_question_if_false = None
+
+        question_8_no.next_question_if_true = None
+        question_8_no.next_question_if_false = None
+
+        # Save all changes to the database
+        question_1.save()
+        question_2_yes.save()
+        question_3_yes.save()
+        question_4_yes.save()
+        question_5_yes.save()
+        question_3_no.save()
+        question_4_no.save()
+        question_6.save()
+        question_7.save()
+        question_8_yes.save()
+        question_8_no.save()
 
 
 @api_view(['GET'])

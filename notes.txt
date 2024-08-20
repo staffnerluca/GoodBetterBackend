@@ -1,0 +1,9 @@
+How to store the course data:
+
+########## Question #############
+name
+content
+type
+image
+question after if true
+question after if false
