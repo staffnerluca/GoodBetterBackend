@@ -202,6 +202,14 @@ def get_all_users(request):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+def get_course(request, course_id):
+    course = Course.objects.all()
+    course_data = serializers.serialize("json", course)
+    return Response(course_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def create_example_course_questions(request):
     with transaction.atomic():
         course = Course.objects.create(
