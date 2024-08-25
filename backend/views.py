@@ -129,6 +129,7 @@ def get_data_for_vegetarian_streak_page(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_questions_by_course(request, course_id):
     try:
         questions = CourseQuestion.objects.filter(course=course_id)
@@ -198,6 +199,15 @@ def get_all_users(request):
     profiles = UserProfile.objects.all()
     profiles_data = serializers.serialize('json', profiles)
     return Response(profiles_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def change_eating_meat_days(request):
+    username = request.data.get('username'),
+    user = UserProfile.objects.get(username = username)
+    user.meat_days = request.data.get("meat_days")
+    return Response({"message": "changed succesefully"}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
