@@ -14,7 +14,8 @@ from .views import (
     get_all_days,
     get_questions_by_course,
     create_example_course_questions,
-    get_course
+    get_course,
+    get_all_courses
 )
 
 urlpatterns = [
@@ -33,5 +34,6 @@ urlpatterns = [
     path('get_all_days/', get_all_days, name='get_all_days'),
     path('create_example_course/', create_example_course_questions, name='create_example_course_questions'),
     path('get_course/<int:course_id>/', get_course, name='get_course'),
+    path('get_all_courses/', get_all_courses, name='get_all_courses')
 
 ]

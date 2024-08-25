@@ -38,7 +38,8 @@ class Days(models.Model):
 
 class Course(models.Model):
     name = models.CharField(max_length=50)
-    goal = models.TextField()    
+    goal = models.TextField()
+    image = models.TextField()
 
 
 class CourseQuestion(models.Model):

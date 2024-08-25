@@ -210,6 +210,14 @@ def get_course(request, course_id):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+def get_all_courses(request):
+    courses = Course.objects.all()
+    serializer = CourseSerializer(courses, many=True, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def create_example_course_questions(request):
     with transaction.atomic():
         course = Course.objects.create(

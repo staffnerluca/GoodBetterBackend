@@ -46,9 +46,15 @@ class CourseQuestionSerializer(serializers.ModelSerializer):
 
 
 class CourseSerializer(serializers.ModelSerializer):
+    imageUrl = serializers.SerializerMethodField()
+
     class Meta:
         model = Course
-        fields = ['id', 'name', 'creator', 'goal', 'course_type']
+        fields = ['id', 'name', 'goal', 'imageUrl']
+
+    def get_imageUrl(self, obj):
+        request = self.context.get('request')
+        return request.build_absolute_uri(obj.image) if obj.image else ''
 
 
 class DoneQuestionsSerializer(serializers.ModelSerializer):
