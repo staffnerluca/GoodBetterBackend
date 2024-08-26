@@ -9,6 +9,7 @@ from .models import UserProfile, CustomUser, Days, Course, CourseQuestion
 from .serializers import CourseQuestionSerializer, CourseSerializer, UserProfileSerializer
 import random
 import json
+import datetime
 from datetime import timedelta
 from django.utils import timezone
 from django.core import serializers
@@ -146,7 +147,7 @@ def get_questions_by_course(request, course_id):
     
 
 # can only be created once. After that the username needs to be changed
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes([AllowAny])
 def create_test_users(request):
     try:
@@ -167,7 +168,7 @@ def create_test_users(request):
                 course_streak=i * 2,
                 joined_at=timezone.now().date() - timedelta(days=i * 30),
                 total_time_on_the_app_in_minutes=i * 100,
-                meat_days="Mo,Fr" if i % 2 == 0 else "Tu,Th"
+                meat_days="Mon,Fri" if i % 2 == 0 else "Tu,Th"
             )
 
         print("10 example datasets created.")
@@ -208,6 +209,36 @@ def change_eating_meat_days(request):
     user = UserProfile.objects.get(username = username)
     user.meat_days = request.data.get("meat_days")
     return Response({"message": "changed succesefully"}, status=status.HTTP_200_OK)
+
+
+def parse_free_days(user):
+    meat_days = user.meat_days
+    meat_days = meat_days.split(",")
+    days = {}
+    for i in range(7):
+        day = datetime.datetime.now() + datetime.timedelta(days=i - datetime.datetime.now().weekday())
+        day = day.strftime("%a")
+        if day in meat_days:
+            days[day] = True
+        else:
+            days[day] = False
+    print(days)
+    return days 
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def is_free_day(request):
+    username = request.GET.get("username")
+    user_profile = get_object_or_404(UserProfile, username=username)
+    meat_days = parse_free_days(user_profile)
+    print(meat_days)
+    weekday_num = datetime.datetime.now() + datetime.timedelta(days=datetime.datetime.now().weekday())
+    weekday = weekday_num.strftime("%a")
+    if meat_days[weekday]:
+        return Response({"freeDay" : True}, status=status.HTTP_200_OK)
+    else:
+        return Response({"freeDay" : False}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
