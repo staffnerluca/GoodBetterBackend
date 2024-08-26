@@ -241,6 +241,27 @@ def is_free_day(request):
         return Response({"freeDay" : False}, status=status.HTTP_200_OK)
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def post_did_user_eat_meat(request):
+    data = request.data
+    username = data["username"]
+    vegetarian_status = data["vegetarian_status"]
+    user = get_object_or_404(UserProfile, username=username)
+    today = datetime.datetime.today()
+    current_date = Days.objects.filter(user = user, date = today).first()
+    if current_date:
+        current_date.vegetarian_status = vegetarian_status
+        current_date.save()
+    else:
+        day = Days.objects.create(
+            user = user,
+            date = today,
+            vegetarian_status = vegetarian_status
+        )
+    return Response({"message": "success"}, status=status.HTTP_200_OK)
+    
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_course(request, course_id):

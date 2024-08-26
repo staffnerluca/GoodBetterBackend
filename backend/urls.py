@@ -16,7 +16,8 @@ from .views import (
     create_example_course_questions,
     get_course,
     get_all_courses,
-    is_free_day
+    is_free_day,
+    post_did_user_eat_meat
 )
 
 urlpatterns = [
@@ -36,5 +37,6 @@ urlpatterns = [
     path('create_example_course/', create_example_course_questions, name='create_example_course_questions'),
     path('get_course/<int:course_id>/', get_course, name='get_course'),
     path('get_all_courses/', get_all_courses, name='get_all_courses'),
-    path('is_free_day/', is_free_day, name='is_free_day')
+    path('is_free_day/', is_free_day, name='is_free_day'),
+    path('post_did_user_eat_meat', post_did_user_eat_meat, name='post_did_user_eat_meat')
 ]
