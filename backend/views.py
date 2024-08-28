@@ -294,13 +294,6 @@ def get_username_from_mail(request):
 @permission_classes([AllowAny])
 def create_example_course_questions(request):
     with transaction.atomic():
-        what_believe_image_path = "what_believe.png"
-        try:
-            with open(what_believe_image_path, "rb") as img:
-                what_believe_content = img.read()
-        except FileNotFoundError:
-            return Response({"message":settings.MEDIA_ROOT}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        what_believe_file = ContentFile(what_believe_content, 'what_believe.png')
         course = Course.objects.create(
             name="What I believe and what I should believe",
             goal="Teaches basics of morality and starts to ask relevant questions",
