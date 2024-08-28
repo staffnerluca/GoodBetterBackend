@@ -10,7 +10,9 @@ from .serializers import CourseQuestionSerializer, CourseSerializer, UserProfile
 import random
 import json
 import datetime
+import os
 from datetime import timedelta
+from django.conf import settings
 from django.utils import timezone
 from django.core import serializers
 from django.db import transaction
@@ -18,6 +20,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.files.base import ContentFile
 
 
 @api_view(['POST'])
@@ -291,9 +294,17 @@ def get_username_from_mail(request):
 @permission_classes([AllowAny])
 def create_example_course_questions(request):
     with transaction.atomic():
+        what_believe_image_path = "what_believe.png"
+        try:
+            with open(what_believe_image_path, "rb") as img:
+                what_believe_content = img.read()
+        except FileNotFoundError:
+            return Response({"message":settings.MEDIA_ROOT}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        what_believe_file = ContentFile(what_believe_content, 'what_believe.png')
         course = Course.objects.create(
             name="What I believe and what I should believe",
-            goal="Teaches basics of morality and starts to ask relevant questions"
+            goal="Teaches basics of morality and starts to ask relevant questions",
+            image="http://127.0.0.1:8000/api/media/what_believe.png"
         )
         
         # Create questions

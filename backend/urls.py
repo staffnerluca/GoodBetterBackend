@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from .views import (
     get_current_course_lesson,
     get_eating_meat_days,
@@ -41,4 +43,4 @@ urlpatterns = [
     path('is_free_day/', is_free_day, name='is_free_day'),
     path('post_did_user_eat_meat', post_did_user_eat_meat, name='post_did_user_eat_meat'),
     path('get_username_from_mail/', get_username_from_mail, name='get_username_from_mail')
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
