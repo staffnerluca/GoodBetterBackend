@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.db.models import F, Q, Sum # F: access field values directely; Q: advanced conditions
 from django.db.models.functions import Abs
 from .models import UserProfile, CustomUser, Days, Course, CourseQuestion
-from .serializers import CourseQuestionSerializer, CourseSerializer, UserProfileSerializer
+from .serializers import CourseQuestionSerializer, CourseSerializer, UserProfileSerializer, DaysSerializer
 import random
 import json
 import datetime
@@ -280,6 +280,15 @@ def get_all_courses(request):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+def get_username_from_mail(request):
+    mail = request.GET.get("mail")
+    user = CustomUser.objects.filter(email_address = mail).first()
+    user_profile = UserProfile.objects.filter(user = user).first()
+    return Response({"username": user_profile.username}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def create_example_course_questions(request):
     with transaction.atomic():
         course = Course.objects.create(
@@ -410,5 +419,5 @@ def create_example_course_questions(request):
 @permission_classes([AllowAny])
 def get_all_days(request):
     days = Days.objects.all()
-    days_json = serializers.serialize('json', days)
-    return Response(days_json, status=status.HTTP_200_OK)
+    days_json = DaysSerializer(days, many=True)
+    return Response(days_json.data, status=status.HTTP_200_OK)
