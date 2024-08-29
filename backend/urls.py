@@ -21,7 +21,8 @@ from .views import (
     is_free_day,
     post_did_user_eat_meat,
     get_username_from_mail,
-    moarality_chatbot
+    moarality_chatbot,
+    get_current_streak
 )
 
 urlpatterns = [
@@ -44,5 +45,6 @@ urlpatterns = [
     path('is_free_day/', is_free_day, name='is_free_day'),
     path('post_did_user_eat_meat', post_did_user_eat_meat, name='post_did_user_eat_meat'),
     path('get_username_from_mail/', get_username_from_mail, name='get_username_from_mail'),
-    path('morality_chatbot', moarality_chatbot, name='morality_chatbot')
+    path('morality_chatbot', moarality_chatbot, name='morality_chatbot'),
+    path('get_current_streak/<str:username>', get_current_streak, name='get_current_streak')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

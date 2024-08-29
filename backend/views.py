@@ -116,8 +116,6 @@ def get_calendar_test(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_data_for_vegetarian_streak_page(request, username):
-    print("start getting data")
-    #username = request.GET.get("username")
     if not username:
         return Response({"Error": "No username given"}, status=status.HTTP_400_BAD_REQUEST)
     userProf = UserProfile.objects.get(username=username)
@@ -131,6 +129,15 @@ def get_data_for_vegetarian_streak_page(request, username):
         }
     return Response(data, status=status.HTTP_200_OK)
 
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_current_streak(request, username):
+    userProf = UserProfile.objects.get(username=username)
+    data = {
+        "not_eating_meat_streak": userProf.not_eating_meat_streak
+    }
+    return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -268,8 +275,8 @@ def post_did_user_eat_meat(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_course(request, course_id):
-    course = Course.objects.all()
-    course_data = serializers.serialize("json", course)
+    course = Course.objects.filter(id=course_id).first()
+    course_data = CourseSerializer(course, context={'request': request}).data
     return Response(course_data, status=status.HTTP_200_OK)
 
 
