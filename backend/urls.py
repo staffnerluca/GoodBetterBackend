@@ -20,7 +20,8 @@ from .views import (
     get_all_courses,
     is_free_day,
     post_did_user_eat_meat,
-    get_username_from_mail
+    get_username_from_mail,
+    moarality_chatbot
 )
 
 urlpatterns = [
@@ -32,7 +33,7 @@ urlpatterns = [
     path('get_all_users/', get_all_users, name='get_all_users'),
     path('create_test_days/', create_test_days, name='create_test_days'),
     path('get_calendar/', get_calendar, name='get_calendar'),
-    path('get_data_for_vegetarian_streak_page/', get_data_for_vegetarian_streak_page, name='get_data_for_vegetarian_streak_page'),
+    path('get_data_for_vegetarian_streak_page/<str:username>/', get_data_for_vegetarian_streak_page, name='get_data_for_vegetarian_streak_page'),
     path('create_user_profile/', create_user_profile, name='create_user_profile'),
     path('get_calendar_test/', get_calendar_test, name='get_calendar_test'),
     path('course-questions/<int:course_id>/', get_questions_by_course, name='get_questions_by_course'),
@@ -42,5 +43,6 @@ urlpatterns = [
     path('get_all_courses/', get_all_courses, name='get_all_courses'),
     path('is_free_day/', is_free_day, name='is_free_day'),
     path('post_did_user_eat_meat', post_did_user_eat_meat, name='post_did_user_eat_meat'),
-    path('get_username_from_mail/', get_username_from_mail, name='get_username_from_mail')
+    path('get_username_from_mail/', get_username_from_mail, name='get_username_from_mail'),
+    path('morality_chatbot', moarality_chatbot, name='morality_chatbot')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

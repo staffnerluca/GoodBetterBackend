@@ -10,6 +10,7 @@ from .serializers import CourseQuestionSerializer, CourseSerializer, UserProfile
 import random
 import json
 import datetime
+import openai
 import os
 from datetime import timedelta
 from django.conf import settings
@@ -20,7 +21,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-from django.core.files.base import ContentFile
 
 
 @api_view(['POST'])
@@ -49,7 +49,7 @@ def register(request):
 @permission_classes([AllowAny])
 def get_current_course_lesson(request):
     return Response({"basicMorality": "10"})
- 
+
 
 # Creating stuff
 def create_course():
@@ -115,9 +115,9 @@ def get_calendar_test(request):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def get_data_for_vegetarian_streak_page(request):
+def get_data_for_vegetarian_streak_page(request, username):
     print("start getting data")
-    username = request.GET.get("username")
+    #username = request.GET.get("username")
     if not username:
         return Response({"Error": "No username given"}, status=status.HTTP_400_BAD_REQUEST)
     userProf = UserProfile.objects.get(username=username)
@@ -141,13 +141,13 @@ def get_questions_by_course(request, course_id):
             return Response({'error': 'No questions found for this course'}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = CourseQuestionSerializer(questions, many=True)
-        
+
         questions_dict = {question['id']: question for question in serializer.data}
-        
+
         return Response(questions_dict)
     except CourseQuestion.DoesNotExist:
         return Response({'error': 'Course does not exist'}, status=status.HTTP_404_NOT_FOUND)
-    
+
 
 # can only be created once. After that the username needs to be changed
 @api_view(['GET'])
@@ -180,7 +180,7 @@ def create_test_users(request):
         return Response({"message":"Users where already created."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes([AllowAny])
 def create_test_days(request):
     for i in range(10):
@@ -263,7 +263,7 @@ def post_did_user_eat_meat(request):
             vegetarian_status = vegetarian_status
         )
     return Response({"message": "success"}, status=status.HTTP_200_OK)
-    
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -290,6 +290,34 @@ def get_username_from_mail(request):
     return Response({"username": user_profile.username}, status=status.HTTP_200_OK)
 
 
+OPENAI_API_KEY = "insert OpenAI API key"
+
+client = openai.OpenAI(
+    api_key = OPENAI_API_KEY
+)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def moarality_chatbot(request):
+    if request.method == "POST":
+        query = request.data.get("query", "")
+        if not query:
+            return Response({"error": "Query parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": query},
+                ]
+            )
+            answer = response.choices[0].message['content']
+            return Response({"answer": answer}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return Response({"error": "Invalid HTTP method"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def create_example_course_questions(request):
@@ -299,7 +327,19 @@ def create_example_course_questions(request):
             goal="Teaches basics of morality and starts to ask relevant questions",
             image="http://127.0.0.1:8000/api/media/what_believe.png"
         )
-        
+
+        course2 = Course.objects.create(
+            name="Is there a difference in the worth between humans and animals?",
+            goal="Different philosophical views about the value of non human creatures",
+            image="http://127.0.0.1:8000/api/media/animal_rights.png"
+        )
+
+        course3 = Course.objects.create(
+            name="Conequences or ideals",
+            goal="Explores the difference between virtue ethics, Kantian ethics and conequentialist approaches",
+            image="http://127.0.0.1:8000/api/media/consequences_or_ideals.png"
+        )
+
         # Create questions
         question_1 = CourseQuestion.objects.create(
             name="Eat Meat?",
@@ -319,7 +359,7 @@ def create_example_course_questions(request):
             is_boolean=True,
             options=""
         )
-        
+
         question_3 = CourseQuestion.objects.create(
             name="Spend on Meat?",
             content="On average, how much do you spend on meat-eating every week?",
@@ -328,7 +368,7 @@ def create_example_course_questions(request):
             is_boolean=False,
             options="int"
         )
-        
+
         question_4 = CourseQuestion.objects.create(
             name="Meat Proportions?",
             content="What proportion of meat you eat is factory-farmed, and what proportion of meat you eat is non-factory farmed?",
@@ -337,7 +377,7 @@ def create_example_course_questions(request):
             is_boolean=False,
             options="percent"
         )
-        
+
         question_5 = CourseQuestion.objects.create(
             name="Types of Meat?",
             content="In proportion, what types of meat do you eat? (beef, chicken, pork, fish, …)",
@@ -346,7 +386,7 @@ def create_example_course_questions(request):
             is_boolean=False,
             options="percent: beef, chicken, pork, fish"
         )
-        
+
         question_6 = CourseQuestion.objects.create(
             name="Slavery Wrong?",
             content="If you have to bet, would you bet that slavery is, in fact, morally wrong?",
@@ -355,7 +395,7 @@ def create_example_course_questions(request):
             is_boolean=True,
             options=""
         )
-        
+
         question_7 = CourseQuestion.objects.create(
             name="Factory-Farmed Meat Wrong?",
             content="If you have to bet, would you bet that eating factory-farmed meat is, in fact, morally wrong?",
@@ -364,7 +404,7 @@ def create_example_course_questions(request):
             is_boolean=True,
             options=""
         )
-        
+
         question_8_yes = CourseQuestion.objects.create(
             name="Why Factory-Farmed Meat?",
             content="Then, why do you still eat factory-farmed meat?",
@@ -373,7 +413,7 @@ def create_example_course_questions(request):
             is_boolean=False,
             options=""
         )
-        
+
         question_8_no = CourseQuestion.objects.create(
             name="Why Permissible?",
             content="Why is eating factory-farmed meat morally permissible?",
@@ -382,7 +422,7 @@ def create_example_course_questions(request):
             is_boolean=False,
             options=""
         )
-        
+
         # Link questions based on the provided flow
         question_1.next_question_if_true = question_2
         question_1.next_question_if_false = question_2
